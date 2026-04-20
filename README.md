@@ -44,14 +44,20 @@ Interfaz de Salida: Telegram Bot (Formato HTML estricto para evitar errores de p
 
 ## 📋 Configuración y Requisitos
 1. Obtención de Tokens
-AEMET: Solicita tu clave API en su Centro de Descargas.
+AEMET: Solicita tu clave API en su Centro de Descargas https://opendata.aemet.es/centrodedescargas/altaUsuario.
 
-Google Gemini: Crea tu API Key en Google AI Studio.
+Google Gemini: Crea tu API Key en Google AI Studio https://aistudio.google.com/.
 
 Telegram: Crea tu bot con @BotFather.
 
 2. Conexión con REE (ESIÓS)
-El nodo de Red Eléctrica utiliza el token público de la web oficial. Para configuraciones avanzadas, consulta la documentación de ESIÓS, teniendo en cuenta que la configuración del nodo podría variar según las actualizaciones de su API pública.
+El nodo Consula_Precios_REE utiliza el endpoint público de ESIOS.
+
+Importante: La configuración actual se ha realizado mediante herramientas de desarrollador utilizando el token público, debido a la demora en la recepción de tokens personalizados.
+
+Documentación Oficial: Para solicitar un token propio o consultar cambios en la API, visita ESIÓS - API de Red Eléctrica https://www.esios.ree.es/es/pagina/api.
+
+Aviso: Es posible que este nodo requiera ajustes manuales en las cabeceras si la documentación oficial de REE se actualiza.
 
 
 
