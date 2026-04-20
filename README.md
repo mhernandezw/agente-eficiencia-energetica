@@ -1,41 +1,53 @@
 # agente-eficiencia-energetica
 
-🤖 Agente de IA: Consultor de Eficiencia Energética (n8n + Gemini)
-Este repositorio contiene un flujo de n8n diseñado para actuar como un consultor inteligente en eficiencia energética y salud ambiental. El sistema monitoriza automáticamente el clima y los precios de la electricidad para generar recomendaciones personalizadas enviadas vía Telegram.
+🤖 Agente de IA: Consultor de Eficiencia Energética
+<img width="3052" height="1202" alt="image" src="https://github.com/user-attachments/assets/61769437-e70e-477f-bb4d-ff273e8e59e2" />
 
-🕒 Automatización y Programación Crítica
-El flujo está configurado con un nodo Schedule Trigger para automatizar su ejecución diaria.
 
-Hora de ejecución recomendada: Se debe programar a partir de las 20:15 o 21:00 horas.
+Este proyecto nace como una solución inteligente para equilibrar el ahorro económico y la salud ambiental en el hogar. Utilizando un agente de IA avanzado, el sistema monitoriza en tiempo real la meteorología y el mercado eléctrico para enviar protocolos de actuación personalizados.
 
-Motivo técnico: El nodo Consula_Precios_REE busca los datos del día siguiente utilizando la expresión {{ $now.plus({ days: 1 }) }}.
+🚀 La Misión
+El objetivo es democratizar la eficiencia energética, permitiendo que el hogar se gestione bajo estándares de la OMS (confort térmico entre 18°C y 24°C) sin que el usuario tenga que analizar tablas complejas de precios o mapas meteorológicos.
 
-Disponibilidad de datos: Red Eléctrica de España (REE) suele publicar los precios del PVPC para la jornada siguiente a las 20:15; una ejecución anterior resultará en un error por falta de datos.
+⏱️ Programación Crítica (Estabilidad del Sistema)
+El flujo está calibrado específicamente para garantizar la disponibilidad de los datos y la estabilidad de la IA:
 
-🏗️ Funcionamiento del Sistema
-El flujo se organiza en tres etapas principales que convergen en el Agente de IA:
+Ejecución diaria a las 21:00: Se ha fijado esta hora para evitar los picos de demanda en los servidores de IA que suelen causar el error 503 (High Demand) detectado durante la franja de las 20:00.
 
-Ingesta de Datos Meteorológicos (AEMET): Obtiene la previsión horaria y la formatea para extraer variables críticas como temperatura, rachas de viento y humedad.
+Sincronización con REE: A las 21:00, los precios del PVPC para el día siguiente ya están publicados, permitiendo que la consulta {{ $now.plus({ days: 1 }) }} obtenga la información necesaria de Red Eléctrica.
 
-Análisis de Mercado Eléctrico (REE): Consulta los precios del PVPC para el día siguiente, clasificándolos por tramos horarios y niveles de coste (Verde, Amarillo, Rojo).
+📍 Personalización: Tu Municipio
+Para que el agente analice el clima de tu zona, debes actualizar el código de municipio en el nodo Obtencion_URL_AEMET.
 
-Análisis de IA (Google Gemini): El agente procesa ambas fuentes de datos basándose en los estándares de la OMS (confort entre 18°C-24°C) para recomendar el uso de ventanas, aire acondicionado o ventiladores.
+¿Cómo encontrar el código de tu municipio?
+Ve a la web oficial de AEMET y busca tu municipio en el buscador de predicción.
 
-📋 Requisitos de Configuración
-1. API AEMET
-Obtención: Solicita tu API Key gratuita en el Centro de Descargas de AEMET.
+Una vez en la página de predicción por horas de tu municipio, observa la URL del navegador.
 
-Nodo: Obtencion_URL_AEMET.
+El código necesario es el número que aparece al final de la URL, justo después de las letras "id".
 
-2. Google Gemini (IA)
-Token: Genera tu clave en Google AI Studio.
+Ejemplo: Para Argés (Toledo), la URL es .../municipios/horas/arges-id45016, por lo que el código es 45016.
 
-Modelo: Se utiliza el modelo más eficiente (Gemini Flash), optimizado para tareas de análisis de datos estructurados sin consumo excesivo de recursos.
+Sustituye ese número en el campo URL del primer nodo del flujo: https://opendata.aemet.es/.../municipio/horaria/TU_CODIGO.
 
-3. Red Eléctrica (REE)
-Token: Este flujo utiliza el token público de la API de ESIOS.
+🛠️ Pila Tecnológica
+Cerebro (LLM): Google Gemini (Modelo Flash para máxima eficiencia y ahorro de cuota).
 
-Referencia: Puedes consultar la documentación oficial o solicitar un token propio en la web de ESIOS.
+Orquestación (Workflow): n8n (Low-Code/Agentic).
 
-4. Telegram
-Configura un bot mediante @BotFather y obtén tu Chat ID personal para recibir el informe.
+Fuentes de Datos: * AEMET: Predicción horaria técnica personalizada por código de municipio.
+
+REE (ESIÓS): Precios de la luz en tiempo real.
+
+Interfaz de Salida: Telegram Bot (Formato HTML estricto para evitar errores de parseo).
+
+📋 Configuración y Requisitos
+1. Obtención de Tokens
+AEMET: Solicita tu clave API en su Centro de Descargas.
+
+Google Gemini: Crea tu API Key en Google AI Studio.
+
+Telegram: Crea tu bot con @BotFather.
+
+2. Conexión con REE (ESIÓS)
+El nodo de Red Eléctrica utiliza el token público de la web oficial. Para configuraciones avanzadas, consulta la documentación de ESIÓS, teniendo en cuenta que la configuración del nodo podría variar según las actualizaciones de su API pública.
