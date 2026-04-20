@@ -1,0 +1,342 @@
+{
+  "name": "AgenteIA Ahorro energetico programado",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**ROL:** Consultor Senior en Eficiencia Energética y Salud Ambiental (Estándares OMS: 18°C-24°C | Sueño: 18°C-20°C).\n\n**MISIÓN:** Generar el protocolo de gestión del hogar para <b>{{ $json.municipio }} ({{ $json.provincia }})</b> el día <b>{{ $json.fecha }}</b>. \n\n**REGLAS DE FORMATO (PARA EVITAR ERRORES DE TELEGRAM):**\n1. **HTML ESTRICTO:** Usa exclusivamente <b> y </b> para negritas. \n2. **PROHIBICIÓN DE SÍMBOLOS:** Está terminantemente PROHIBIDO usar los caracteres \"<\" y \">\" fuera de las etiquetas de negrita. \n   - En lugar de \"T < 18°C\", escribe \"T inferior a 18°C\".\n   - En lugar de \"Viento > 25km/h\", escribe \"Viento superior a 25 km/h\".\n3. **LONGITUD:** Máximo 3800 caracteres.\n4. **FILTRO DE RUIDO:** Sin saludos ni presentaciones. Empieza directo con el informe.\n\n**LÓGICA TÉCNICA (OMS Y EFICIENCIA):**\n- **PRIORIDAD ABSOLUTA:** El confort térmico y la salud (rango 18°C-24°C) prevalecen sobre el ahorro económico. Si hay Estrés Térmico o Infraconfort, se DEBE recomendar climatización activa, aunque el precio de la luz sea elevado, priorizando las horas menos caras dentro del bloque de necesidad.\n- **Inercia Térmica:** Si la T. Ext es inferior a 18°C, el objetivo es Conservación. Si es superior a 24°C, es Protección.\n- **Seguridad:** Prohibido abrir si hay Calima, Polvo, Bruma, Viento superior a 25 km/h o Lluvia (incluido \"Ip\").\n- **Noches Tropicales:** Si la T. Mín es superior a 22°C, prioriza AC/Ventilador para dormir según rango OMS (18-20°C).\n- **Ahorro:** Recomienda el combo AC + Ventilador (ahorro del 40%) y el aprovechamiento de tramos VERDES para pre-enfriamiento estructural..\n\n**ESTRUCTURA DEL INFORME (USAR HTML):**\n\n📍 <b>{{ $json.municipio }} ({{ $json.provincia }}) | {{ $json.fecha }}</b>\n☀️ <b>CICLO SOLAR:</b> {{ $json.amanecer }} - {{ $json.atardecer }}\n\n---------------------------------------\n\n🌡️ <b>ANÁLISIS TÉRMICO Y SALUD (OMS):</b>\n- ❄️ <b>Zona de Infraconfort (inferior a 18°C):</b> [Horas y T. mín]. Riesgo respiratorio.\n- ✨ <b>Zona de Confort (18-24°C):</b> [Horas]. Rango ideal.\n- 🔥 <b>Zona de Estrés Térmico (superior a 24°C):</b> [Horas y T. máx]. Riesgo de fatiga.\n\n---------------------------------------\n\n💰 <b>ANÁLISIS ELÉCTRICO (PVPC):</b>\n\n🟢 <b>VALLE/VERDE:</b> [Horarios y precio medio]\n\n🔴 <b>PICO/ROJO:</b> [Horarios y precio máximo]\n\nMenciona brevemente si el fin de semana compensa por peajes.\n---------------------------------------\n\n🪟 <b>ESTRATEGIA OPERATIVA DE VENTANAS:</b>\n- <b>ORDEN:</b> [Ej: CIERRE HERMÉTICO / VENTILACIÓN CRUZADA]\n- <b>HORARIOS:</b> [Tramos exactos]\n- <b>MOTIVO TÉCNICO:</b> (Explicar si es por Calima, Bruma, Viento, o diferencia térmica).\n\n---------------------------------------\n\n❄️ <b>PLAN DE CLIMATIZACIÓN ACTIVA:</b>\n- <b>EQUIPO:</b> [AC / Ventilador / Combo / Apagado]\n- <b>AJUSTE:</b> [Horas, temperatura y modo]\n- <b>MOTIVO:</b> (Ej: \"Pre-enfriamiento estructural\" o \"Compensar noche tropical\")(Justificar la recomendación basándose en el confort OMS. Si el precio es alto pero la temperatura es extrema, priorizar el encendido indicando la hora más eficiente para hacerlo).\n\n---------------------------------------\n\n⚠️ <b>ALERTAS Y SEGURIDAD CRÍTICA:</b>\n(Indica solo si hay: Viento superior a 25km/h, Lluvia/Ip, Calima o Bruma).\n\n---------------------------------------\n\n💡 <b>TIP DE EFICIENCIA PASIVA:</b>\n(Instrucción sobre persianas y toldos según ciclo solar).\n\n\n\nDATOS METEOROLÓGICOS:\n{{ JSON.stringify($json.datos_horarios) }}\n\nDATOS ELÉCTRICOS (PVPC):\n{{ JSON.stringify($json.datos_electricos) }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1200,
+        128
+      ],
+      "id": "82423f82-42df-4402-aa6b-6df63f4ba20b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        416
+      ],
+      "id": "85a177d8-6cf3-41e5-8b98-eda6f16b1654",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ID_CREDENTIALS_GEMINI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "mi_agente_clima"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        384
+      ],
+      "id": "15434924-0c32-4592-b96c-1148efceb795",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "<Tu_ID_Chat_Telegram>",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        128
+      ],
+      "id": "56b2b154-2403-448b-8d92-3cec8c3d1e67",
+      "name": "Send a text message",
+      "webhookId": "5c7f2ebb-4d32-4246-83c5-45bd57ba62ea",
+      "credentials": {
+        "telegramApi": {
+          "id": "ID_CREDENTIALS_TELEGRAM",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/horaria/CODIGO_MUNICIPIO",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "<Tu_Personal_Token_AEMET>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "991ac79f-2b76-4383-b2b5-3f94570680f5",
+      "name": "Obtencion_URL_AEMET"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.datos }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "3264e2a0-6d31-45a5-8c0d-dcb1b64d46cd",
+      "name": "Datos AEMET"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos los datos brutos\nlet rawData = $input.first().json.data;\nif (typeof rawData === 'string') rawData = JSON.parse(rawData);\n\nconst infoBase = rawData[0]; // Aquí está el nombre y provincia\nconst prediccionMañana = infoBase.prediccion.dia[1];\n\nconst horasLimpias = prediccionMañana.temperatura.map((item) => {\n  const hora = item.periodo;\n  const rachaViento = prediccionMañana.vientoAndRachaMax.find(v => v.periodo === hora && v.value !== undefined);\n\n  return {\n    h: hora + \":00\",\n    temp: parseInt(item.value),\n    hum: parseInt(prediccionMañana.humedadRelativa.find(h => h.periodo === hora)?.value || 0),\n    cielo: prediccionMañana.estadoCielo.find(c => c.periodo === hora)?.descripcion || \"Despejado\",\n    precip: prediccionMañana.precipitacion.find(p => p.periodo === hora)?.value || \"0\",\n    viento: parseInt(rachaViento?.value || 0)\n  };\n});\n\nreturn {\n  municipio: infoBase.nombre,\n  provincia: infoBase.provincia,\n  fecha: prediccionMañana.fecha.split('T')[0],\n  amanecer: prediccionMañana.orto,\n  atardecer: prediccionMañana.ocaso,\n  datos_horarios: horasLimpias\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "e899543b-462d-4339-9af4-f897c10cb9f1",
+      "name": "Formateo datos AEMET"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos el array PVPC del nodo anterior\nconst rawData = $input.first().json.PVPC;\n\n// Verificación de seguridad\nif (!rawData || rawData.length === 0) {\n  return { datos_electricos: [], error: \"No se han recibido datos de Red Eléctrica\" };\n}\n\n// 2. Detectamos si es fin de semana (Sábado=6, Domingo=0)\nconst [dia, mes, anio] = rawData[0].Dia.split('/');\nconst fechaObjeto = new Date(anio, mes - 1, dia);\nconst esFinDeSemana = (fechaObjeto.getDay() === 0 || fechaObjeto.getDay() === 6);\n\n// 3. Procesamos las 24 horas y las guardamos en una constante\nconst listaProcesada = rawData.map(item => {\n  const precioMWh = parseFloat(item.PCB.replace(',', '.'));\n  const precioKWhNum = precioMWh / 1000;\n  const peaje = parseFloat(item.TEUPCB.replace(',', '.'));\n\n  // Lógica de tramo horario técnico (Peajes)\n  let tramoHorario = \"PUNTA (Caro)\";\n  if (peaje < 10) {\n    tramoHorario = \"VALLE (Barato)\";\n  } else if (peaje < 40) {\n    tramoHorario = \"LLANO (Medio)\";\n  }\n\n  // Lógica de color de energía (Bolsillo)\n  let tramoColor = \"ROJO\";\n  let recomendacion = \"Evitar consumo alto\";\n  \n  if (precioKWhNum < 0.10) {\n    tramoColor = \"VERDE\";\n    recomendacion = \"Ideal para grandes consumos y climatización\";\n  } else if (precioKWhNum <= 0.15) {\n    tramoColor = \"AMARILLO\";\n    recomendacion = \"Uso moderado\";\n  }\n\n  return {\n    hora: `${item.Hora.split('-')[0]}:00`,\n    // Solo enviamos el dato formateado para ahorrar espacio\n    precio: `${precioKWhNum.toFixed(5).replace('.', ',')} €/kWh`,\n    tramo: esFinDeSemana ? \"VALLE (Fin de semana)\" : tramoHorario,\n    color: tramoColor,\n    sugerencia: recomendacion\n  };\n});\n\n// 4. Retorno del objeto empaquetado para el Merge\nreturn {\n  datos_electricos: listaProcesada\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        240
+      ],
+      "id": "7054ca71-40bf-402e-8795-96c56e2e20a4",
+      "name": "Formateo_Datos_REE"
+    },
+    {
+      "parameters": {
+        "url": "https://api.esios.ree.es/archives/70/download_json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "date",
+              "value": "={{ $now.plus({ days: 1 }).format('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-key",
+              "value": "request_your_personal_token_sending_email_to_consultasios@ree.es"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        240
+      ],
+      "id": "f7756afa-a130-4c99-a54d-e1acf175f9af",
+      "name": "Consula_Precios_REE"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1024,
+        128
+      ],
+      "id": "848e40ec-fb23-486b-bc20-4d0804b8e45a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 21,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        112
+      ],
+      "id": "548e32bb-110e-4868-83a6-41cba456010a",
+      "name": "Schedule Trigger1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtencion_URL_AEMET": {
+      "main": [
+        [
+          {
+            "node": "Datos AEMET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos AEMET": {
+      "main": [
+        [
+          {
+            "node": "Formateo datos AEMET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formateo datos AEMET": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consula_Precios_REE": {
+      "main": [
+        [
+          {
+            "node": "Formateo_Datos_REE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formateo_Datos_REE": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Obtencion_URL_AEMET",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Consula_Precios_REE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "43de8ea2-16f8-4080-9866-c6b8bf9e8fe0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ce460144a23e0db5e03cc632eab482734137a89c6fbfe16909365728fffa441d"
+  },
+  "id": "ktOQZroELtYPWhR5",
+  "tags": []
+}
