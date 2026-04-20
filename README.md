@@ -52,3 +52,44 @@ Telegram: Crea tu bot con @BotFather.
 
 2. Conexión con REE (ESIÓS)
 El nodo de Red Eléctrica utiliza el token público de la web oficial. Para configuraciones avanzadas, consulta la documentación de ESIÓS, teniendo en cuenta que la configuración del nodo podría variar según las actualizaciones de su API pública.
+
+
+
+📊 Ejemplo de Informe Generado
+A continuación, se muestra un ejemplo real del protocolo que el agente envía cada noche a través de Telegram:
+
+📍 Argés (Toledo) | 2026-04-21
+☀️ CICLO SOLAR: 07:30 - 21:00
+
+🌡️ ANÁLISIS TÉRMICO Y SALUD (OMS):
+
+❄️ Zona de Infraconfort (inferior a 18°C): 02:00-09:00. T. mín 13°C. Riesgo respiratorio.
+
+✨ Zona de Confort (18-24°C): 00:00-01:00, 10:00-11:00, 20:00-23:00. Rango ideal.
+
+🔥 Zona de Estrés Térmico (superior a 24°C): 12:00-19:00. T. máx 30°C. Riesgo de fatiga.
+
+💰 ANÁLISIS ELÉCTRICO (PVPC):
+🟢 VALLE/VERDE: 09:00 (0,09880 €/kWh), 14:00-17:00 (precio medio 0,061 €/kWh).
+🔴 PICO/ROJO: 19:00-23:00 (precio máximo 0,24412 €/kWh).
+El 21 de abril es martes, no aplican ventajas de fin de semana.
+
+🪟 ESTRATEGIA OPERATIVA DE VENTANAS:
+
+ORDEN: VENTILACIÓN CRUZADA (20:00-23:00) / CIERRE HERMÉTICO (12:00-19:00).
+
+MOTIVO TÉCNICO: Protección frente a Estrés Térmico (30°C) y vientos elevados.
+
+❄️ PLAN DE CLIMATIZACIÓN ACTIVA:
+
+EQUIPO: Combo AC + Ventilador.
+
+AJUSTE: 14:00-17:00 (24°C, Modo Frío).
+
+MOTIVO: Pre-enfriamiento estructural en tramo VERDE económico.
+
+⚠️ ALERTAS Y SEGURIDAD CRÍTICA:
+
+Viento superior a 25 km/h: 19:00 (39 km/h).
+
+Lluvia: 19:00 ("Ip", precipitación ligera).
