@@ -1,5 +1,5 @@
 {
-  "name": "AgenteIA Ahorro energetico programado",
+  "name": "AgenteIA Ahorro energetico",
   "nodes": [
     {
       "parameters": {
@@ -14,10 +14,13 @@
         128
       ],
       "id": "82423f82-42df-4402-aa6b-6df63f4ba20b",
-      "name": "AI Agent"
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
+        "modelName": "models/gemini-3-flash-preview",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -30,7 +33,7 @@
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "ID_CREDENTIALS_GEMINI",
+          "id": "ID_CREDENTIALS_GEMINI_API",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -54,6 +57,7 @@
         "chatId": "<Tu_ID_Chat_Telegram>",
         "text": "={{ $json.output }}",
         "additionalFields": {
+          "appendAttribution": false,
           "parse_mode": "HTML"
         }
       },
@@ -66,6 +70,9 @@
       "id": "56b2b154-2403-448b-8d92-3cec8c3d1e67",
       "name": "Send a text message",
       "webhookId": "5c7f2ebb-4d32-4246-83c5-45bd57ba62ea",
+      "notesInFlow": false,
+      "alwaysOutputData": false,
+      "retryOnFail": false,
       "credentials": {
         "telegramApi": {
           "id": "ID_CREDENTIALS_TELEGRAM",
@@ -94,7 +101,9 @@
         0
       ],
       "id": "991ac79f-2b76-4383-b2b5-3f94570680f5",
-      "name": "Obtencion_URL_AEMET"
+      "name": "Obtencion_URL_AEMET",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
@@ -108,7 +117,9 @@
         0
       ],
       "id": "3264e2a0-6d31-45a5-8c0d-dcb1b64d46cd",
-      "name": "Datos AEMET"
+      "name": "Datos AEMET",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
@@ -121,11 +132,13 @@
         0
       ],
       "id": "e899543b-462d-4339-9af4-f897c10cb9f1",
-      "name": "Formateo datos AEMET"
+      "name": "Formateo datos AEMET",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
-        "jsCode": "// 1. Obtenemos el array PVPC del nodo anterior\nconst rawData = $input.first().json.PVPC;\n\n// Verificación de seguridad\nif (!rawData || rawData.length === 0) {\n  return { datos_electricos: [], error: \"No se han recibido datos de Red Eléctrica\" };\n}\n\n// 2. Detectamos si es fin de semana (Sábado=6, Domingo=0)\nconst [dia, mes, anio] = rawData[0].Dia.split('/');\nconst fechaObjeto = new Date(anio, mes - 1, dia);\nconst esFinDeSemana = (fechaObjeto.getDay() === 0 || fechaObjeto.getDay() === 6);\n\n// 3. Procesamos las 24 horas y las guardamos en una constante\nconst listaProcesada = rawData.map(item => {\n  const precioMWh = parseFloat(item.PCB.replace(',', '.'));\n  const precioKWhNum = precioMWh / 1000;\n  const peaje = parseFloat(item.TEUPCB.replace(',', '.'));\n\n  // Lógica de tramo horario técnico (Peajes)\n  let tramoHorario = \"PUNTA (Caro)\";\n  if (peaje < 10) {\n    tramoHorario = \"VALLE (Barato)\";\n  } else if (peaje < 40) {\n    tramoHorario = \"LLANO (Medio)\";\n  }\n\n  // Lógica de color de energía (Bolsillo)\n  let tramoColor = \"ROJO\";\n  let recomendacion = \"Evitar consumo alto\";\n  \n  if (precioKWhNum < 0.10) {\n    tramoColor = \"VERDE\";\n    recomendacion = \"Ideal para grandes consumos y climatización\";\n  } else if (precioKWhNum <= 0.15) {\n    tramoColor = \"AMARILLO\";\n    recomendacion = \"Uso moderado\";\n  }\n\n  return {\n    hora: `${item.Hora.split('-')[0]}:00`,\n    // Solo enviamos el dato formateado para ahorrar espacio\n    precio: `${precioKWhNum.toFixed(5).replace('.', ',')} €/kWh`,\n    tramo: esFinDeSemana ? \"VALLE (Fin de semana)\" : tramoHorario,\n    color: tramoColor,\n    sugerencia: recomendacion\n  };\n});\n\n// 4. Retorno del objeto empaquetado para el Merge\nreturn {\n  datos_electricos: listaProcesada\n};"
+        "jsCode": "// 1. Obtenemos el array PVPC\nconst rawData = $input.first().json.PVPC;\n\nif (!rawData || rawData.length === 0) {\n  return { datos_electricos: [], error: \"No se han recibido datos\" };\n}\n\n// 2. Procesamos las 24 horas basándonos SOLO en el precio final\nconst listaProcesada = rawData.map(item => {\n  const precioMWh = parseFloat(item.PCB.replace(',', '.'));\n  const precioKWhNum = precioMWh / 1000;\n\n  let tramoLabel = \"\";\n  let tramoColor = \"\";\n  let recomendacion = \"\";\n\n  // Lógica basada puramente en el PRECIO (como pide la gráfica)\n  if (precioKWhNum < 0.10) {\n    tramoLabel = \"VALLE (Precio muy bajo)\";\n    tramoColor = \"VERDE\";\n    recomendacion = \"Ideal para grandes consumos y climatización\";\n  } else if (precioKWhNum <= 0.15) {\n    tramoLabel = \"LLANO (Precio medio)\";\n    tramoColor = \"AMARILLO\";\n    recomendacion = \"Uso moderado\";\n  } else {\n    tramoLabel = \"PUNTA (Precio alto)\";\n    tramoColor = \"ROJO\";\n    recomendacion = \"Evitar consumo alto\";\n  }\n\n  return {\n    hora: `${item.Hora.split('-')[0]}:00`,\n    precio: `${precioKWhNum.toFixed(5).replace('.', ',')} €/kWh`,\n    tramo: tramoLabel,\n    color: tramoColor,\n    sugerencia: recomendacion\n  };\n});\n\n// 3. Retorno del objeto\nreturn {\n  datos_electricos: listaProcesada\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -134,7 +147,9 @@
         240
       ],
       "id": "7054ca71-40bf-402e-8795-96c56e2e20a4",
-      "name": "Formateo_Datos_REE"
+      "name": "Formateo_Datos_REE",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
@@ -170,7 +185,9 @@
         240
       ],
       "id": "f7756afa-a130-4c99-a54d-e1acf175f9af",
-      "name": "Consula_Precios_REE"
+      "name": "Consula_Precios_REE",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
@@ -332,7 +349,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "43de8ea2-16f8-4080-9866-c6b8bf9e8fe0",
+  "versionId": "81800e86-a4eb-46d5-8375-9eafca8b9d67",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ce460144a23e0db5e03cc632eab482734137a89c6fbfe16909365728fffa441d"
